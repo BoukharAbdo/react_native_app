@@ -22,7 +22,7 @@ const Trash = () => {
   const resizeImage = (uri) => {
     ImageResizer.createResizedImage(uri, 300, 300, 'JPEG', 80)
       .then((resizedImageUri) => {
-        setSelectedImage({ uri: resizedImageUri });
+        setSelectedImage({ uri: resizedImageUri.uri }); // Fix: Access uri property
       })
       .catch((err) => {
         console.error(err);
