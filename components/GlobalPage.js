@@ -8,7 +8,7 @@ import SettingsPage from './SettingsPage';
 const Tab = createBottomTabNavigator();
 
 const GlobalPage = () => (
-  <NavigationContainer>
+  <NavigationContainer independent={true}>
     <Tab.Navigator>
       <Tab.Screen name="Home" component={Home} />
       <Tab.Screen name="Classtring" component={Trash} />
