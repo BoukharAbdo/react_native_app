@@ -1,65 +1,114 @@
-import React from 'react';
-import { View, Image, Button, Platform } from 'react-native';
-import { launchImageLibrary } from 'react-native-image-picker';
+import React, { useState, useEffect } from "react";
+import { View, Text, Image, TouchableOpacity, Button, StyleSheet, Alert } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 
-const SERVER_URL = 'http://localhost:3000';
+export default function Trash() {
+  const [file, setFile] = useState(null);
+  const [error, setError] = useState(null);
 
-const createFormData = (photo, body = {}) => {
-  const data = new FormData();
-
-  data.append('photo', {
-    name: photo.fileName,
-    type: photo.type,
-    uri: Platform.OS === 'ios' ? photo.uri.replace('file://', '') : photo.uri,
-  });
-
-  Object.keys(body).forEach((key) => {
-    data.append(key, body[key]);
-  });
-
-  return data;
-};
-
-const Trash = () => {
-  const [photo, setPhoto] = React.useState(null);
-
-  const handleChoosePhoto = () => {
-    launchImageLibrary({ noData: true }, (response) => {
-      // console.log(response);
-      if (response) {
-        setPhoto(response);
+  const pickImage = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  
+      if (status !== "granted") {
+        throw new Error("Camera roll permission denied");
       }
-    });
+  
+      const result = await ImagePicker.launchImageLibraryAsync();
+  
+      if (result.cancelled) {
+        // Handle if the user cancels the image picker
+        console.log("Image picker cancelled");
+      } else {
+        // Update the file state with the selected image URI
+        setFile(result.assets[0].uri);
+        // Clear any previous errors
+        setError(null);
+      }
+    } catch (error) {
+      // Handle errors related to image picking
+      console.error("Error picking image:", error.message);
+      setError("Error picking image");
+    }
+  };
+  
+
+  const handleSubmit = () => {
+    // Log the image object to the terminal
+    console.log("Image Object:", { uri: file });
+    // You can perform further actions with the image object here
   };
 
-  const handleUploadPhoto = () => {
-    fetch(`${SERVER_URL}/api/upload`, {
-      method: 'POST',
-      body: createFormData(photo, { userId: '123' }),
-    })
-      .then((response) => response.json())
-      .then((response) => {
-        console.log('response', response);
-      })
-      .catch((error) => {
-        console.log('error', error);
-      });
-  };
+  useEffect(() => {
+    // You can perform any other actions when 'file' changes here
+  }, [file]);
 
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      {photo && (
-        <>
-          <Image
-            source={{ uri: photo.uri }}
-            style={{ width: 300, height: 300 }}
-          />
-          <Button title="Upload Photo" onPress={handleUploadPhoto} />
-        </>
+    <View style={styles.container}>
+      <Text style={styles.header}>Add Image:</Text>
+
+      <TouchableOpacity style={styles.button} onPress={pickImage}>
+        <Text style={styles.buttonText}>Choose Image</Text>
+      </TouchableOpacity>
+
+      {file ? (
+        <View style={styles.imageContainer}>
+          <Image source={{ uri: file }} style={styles.image} />
+        </View>
+      ) : (
+        <Text style={styles.errorText}>{error}</Text>
       )}
-      <Button title="Choose Photo" onPress={handleChoosePhoto} />
+
+      {/* Submit button */}
+      <Button title="Submit" onPress={handleSubmit} disabled={!file} />
+
     </View>
   );
-};
+}
 
-export default Trash;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 16,
+  },
+  header: {
+    fontSize: 20,
+    marginBottom: 16,
+  },
+  button: {
+    backgroundColor: "#007AFF",
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 16,
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  imageContainer: {
+    borderRadius: 8,
+    marginBottom: 16,
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  image: {
+    width: 200,
+    height: 200,
+    borderRadius: 8,
+  },
+  errorText: {
+    color: "red",
+    marginTop: 16,
+  },
+});
