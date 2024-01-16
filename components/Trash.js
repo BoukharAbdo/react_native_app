@@ -1,53 +1,63 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Image, Button } from 'react-native';
-import * as ImagePicker from 'react-native-image-picker';
-import ImageResizer from 'react-native-image-resizer';
+import React from 'react';
+import { View, Image, Button, Platform } from 'react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
+
+const SERVER_URL = 'http://localhost:3000';
+
+const createFormData = (photo, body = {}) => {
+  const data = new FormData();
+
+  data.append('photo', {
+    name: photo.fileName,
+    type: photo.type,
+    uri: Platform.OS === 'ios' ? photo.uri.replace('file://', '') : photo.uri,
+  });
+
+  Object.keys(body).forEach((key) => {
+    data.append(key, body[key]);
+  });
+
+  return data;
+};
 
 const Trash = () => {
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [resultText, setResultText] = useState('');
-  const [textInput, setTextInput] = useState('');
+  const [photo, setPhoto] = React.useState(null);
 
-  const selectImage = () => {
-    ImagePicker.showImagePicker(
-      { title: 'Select Image', mediaType: 'photo' },
-      (response) => {
-        if (!response.didCancel && !response.error) {
-          resizeImage(response.uri);
-        }
+  const handleChoosePhoto = () => {
+    launchImageLibrary({ noData: true }, (response) => {
+      // console.log(response);
+      if (response) {
+        setPhoto(response);
       }
-    );
+    });
   };
 
-  const resizeImage = (uri) => {
-    ImageResizer.createResizedImage(uri, 300, 300, 'JPEG', 80)
-      .then((resizedImageUri) => {
-        setSelectedImage({ uri: resizedImageUri.uri }); // Fix: Access uri property
+  const handleUploadPhoto = () => {
+    fetch(`${SERVER_URL}/api/upload`, {
+      method: 'POST',
+      body: createFormData(photo, { userId: '123' }),
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        console.log('response', response);
       })
-      .catch((err) => {
-        console.error(err);
+      .catch((error) => {
+        console.log('error', error);
       });
   };
 
-  const handleSubmission = () => {
-    // Perform any logic with the selected image and text input
-    setResultText(`Submitted Text: ${textInput}`);
-  };
-
   return (
-    <View>
-      <Button title="Select Image" onPress={selectImage} />
-      {selectedImage && <Image source={selectedImage} style={{ width: 200, height: 200 }} />}
-      
-      <TextInput
-        placeholder="Enter text..."
-        value={textInput}
-        onChangeText={(text) => setTextInput(text)}
-      />
-      
-      <Button title="Submit" onPress={handleSubmission} />
-      
-      {resultText !== '' && <Text>{resultText}</Text>}
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      {photo && (
+        <>
+          <Image
+            source={{ uri: photo.uri }}
+            style={{ width: 300, height: 300 }}
+          />
+          <Button title="Upload Photo" onPress={handleUploadPhoto} />
+        </>
+      )}
+      <Button title="Choose Photo" onPress={handleChoosePhoto} />
     </View>
   );
 };
