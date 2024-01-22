@@ -1,43 +1,14 @@
-// WelcomePage.js
 
-import React from 'react';
-import { View, Text, StyleSheet ,Pressable} from 'react-native';
+import { Text, View ,Pressable} from "react-native";
 
-const WelcomePage = ({ navigation }) => {
-  
-
+const App = ({navigation}) => {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Bienvenue dans le Trash Clustering</Text>
-      <Text style={styles.subtitle}>Votre déchet est identifié comme :</Text>
-      <Pressable onPress={()=>navigation.navigate("Login")}>
-      <Text style={styles.buttonText}>Login</Text>
+    <View className="flex-1 items-center justify-center m-8 ">
+      <Text className="text-justify  leading-7 tracking-wider ">Bienvenue sur <Text className="text-slate-800 text-sky-400">Trash clastring</Text> ! Explorez le Far West numérique en partageant vos images avec notre modèle Deep Learning CNN. Téléchargez des paysages époustouflants, découvrez des galeries thématiques, et connectez-vous avec une communauté passionnée. Notre algorithme intelligent classe automatiquement vos images pour une expérience immersive. Rejoignez-nous et plongez dans l'Ouest numérique dès aujourd'hui ! 🌄🤠📸🎉</Text>
+      <Pressable onPress={() => navigation.navigate("Login")}>
+        <Text className="text-slate-800 text-blue-600">Login</Text>
       </Pressable>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 18,
-    marginBottom: 5,
-  },
-  label: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: 'green', // Change the color based on your design
-  },
-});
-
-export default WelcomePage;
+export default App;
